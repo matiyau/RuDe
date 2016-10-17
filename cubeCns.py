@@ -11,8 +11,10 @@ def matrixForm(Arduino) :
     camera.resolution = (320,320)
     cube_sides = ['Front', 'Left', 'Back', 'Right', 'Up', 'Down']
     side='temp'
-    mat=[[[[5 for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
-    
+    mat=[[[[-1 for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
+    sort=[[[[[0 for hs in range (0,2)] for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
+
+    '''
     def col_feed(col_hsv_pdn) :
         print col_hsv_pdn[0], "  ", col_hsv_pdn[1], "  ", col_hsv_pdn[2],
         if (col_hsv_pdn[0]>75 and col_hsv_pdn[0]<=180) and (col_hsv_pdn[1]>=80) :
@@ -33,6 +35,7 @@ def matrixForm(Arduino) :
         else :
             print ' White'
             return 4
+    '''
     
     def capt_proc (side) :
         camera.capture(side + '_raw.jpg')
@@ -65,6 +68,7 @@ def matrixForm(Arduino) :
                 g_ave[2]= g_ave[2] + (float(image[x, y, 1])/1600)
                 r_ave[2]= r_ave[2] + (float(image[x, y, 2])/1600)
 
+        '''
         image=cv2.resize(image, (80,80), interpolation=cv2.INTER_CUBIC)
         for x in range(0,40) :
             for y in range(0,40) :
@@ -83,13 +87,43 @@ def matrixForm(Arduino) :
                 image[x, y] =  [b_ave[3], g_ave[3], r_ave[3]]
 
         cv2.imwrite(side + '_prcsd.jpg', image)
+        '''
          
         for i in range(0,4):
             col_hsv_cv=cv2.cvtColor(np.uint8([[[b_ave[i], g_ave[i], r_ave[i]]]]), cv2.COLOR_BGR2HSV)
-            col_hsv_pdn=[2*col_hsv_cv[0][0][0], float(col_hsv_cv[0][0][1])/255*100, float(col_hsv_cv[0][0][2])/255*100]
-            mat[i/2][i%2][1][0] = col_feed(col_hsv_pdn)
-            
+            #col_hsv_pdn=[2*col_hsv_cv[0][0][0], float(col_hsv_cv[0][0][1])/255*100, float(col_hsv_cv[0][0][2])/255*100]
+            sort[i/2][i%2][1][0] = col_hsv_cv[0:2]
 
+    def s(i):
+        return sort[(i/12)%2][(i/6)%2][(i/3)%2][i%3]
+
+    def m(i):
+        return mat[(i/12)%2][(i/6)%2][(i/3)%2][i%3]
+
+    def dist(p1,p2):
+        r1=p1[1]
+        r2=p2[1]
+        a1=p1[0]
+        a2=p2[0]
+        return ((r1*r1)+(r2*r2)-(2*r1*r2*cos(a1-a2)))
+
+    def group(i,j):
+        m(i)=j
+        for x in range (0,3):
+            count=0
+            for y in range (i+1,24):
+                if mat(y)!=(-1):
+                    continue
+                temp=dist(s(i), s(y))
+                if count==0 :
+                    dis=temp
+                    pos=y
+                elif dis>temp :
+                    dis=temp
+                    pos=y
+            m(pos)=j
+        
+    
     for side in cube_sides :
         print side
         for cntdwn in range(5,0,-1) :
@@ -100,14 +134,25 @@ def matrixForm(Arduino) :
         #print mat[0][0][1][0], '  ', mat[1][0][1][0], '\n'
         if side != 'Up' and side != 'Down':
             cubeRot.full('up', 1, mat)
-        elif side = 'Up' :
+        elif side == 'Up' :
             cubeRot.full('left', 1, mat)
             cubeRot.full('left', 1, mat)
-        else
+        else:
             cubeRot.full('left', -1, mat)
         if side == 'Right':
             cubeRot.full('left', -1, mat)       
         #print mat[0][0][0][2], '  ', mat[0][0][1][2]
         #print mat[1][0][0][2], '  ', mat[1][0][1][2], '\n'
+
+
+    for i in range (0,5) :
+        for j in range (0,24):
+            if m(j)!=(-1):
+                continue
+            group(j,i)
+
+    for i in range (0,24):
+        if m(i)==(-1):
+            m(i)=5    
 
     return mat
