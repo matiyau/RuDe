@@ -1,14 +1,17 @@
 def steps() :
     print "SETTING UP ..."
     import cubeCns
-    import cubeSlv_GraphIDA as IDA
+    import cubeSlv_GraphIDA as IDA    
+    
+    import serial    
+    import pickle 
+    
     '''
     import cubeSlv_fst as F
     import cubeSlv_lstCPs as LC1
     import cubeSlv_lstCFx as LC2
     import cubeSlv_lstOrn as LF
     '''
-    import pickle
     #import serial
 
     Algo = []
@@ -19,10 +22,10 @@ def steps() :
     Cube = cubeCns.matrixForm(Arduino)
     with open('Matrix', 'rb') as comb:
         Cube=pickle.load(comb)
-        
 
     print Cube
-    IDA.steps(Cube, Algo)
+    DB=IDA.setup()
+    IDA.main(Cube, Algo, DB)
     print "\nCOMPUTING SOLUTION ..."
     '''F.steps(Cube, Algo)
     LC1.steps(Cube, Algo)

@@ -1,17 +1,10 @@
-def steps (scramble, inst) :
-    from copy import deepcopy as cp
-    from math import factorial as fact
-    from threading import Thread
-    import cubeSfy as cS
-    import time
-    
-    #List of corners
-    corn=[i for i in range (0,7)]
+from threading import Thread
+import cubeSfy as cS
+from math import factorial as fact
+from copy import deepcopy as cp
 
+def setup():
     heur=[[[[[[[chr(11) for f in range (0,3)] for e in range (0,3)] for d in range (0,3)] for c in range (0,3)] for b in range (0,3)] for a in range (0,3)] for i in range (0,5040)]
-    
-    #List of moves
-    moves=["U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'"]
 
     #List of threads
     thr=[Thread for i in range (0,21)]
@@ -32,7 +25,30 @@ def steps (scramble, inst) :
                                         heur[j][a][b][c][d][e][f]=chr((ord(temp[j][pos/2])-32)/16)
                                     else:
                                         heur[j][a][b][c][d][e][f]=chr((ord(temp[j][pos/2])-32)%16)
-    
+      
+
+    with open('DBPat', 'rb') as pattern:
+            temp=pattern.readlines()
+            
+    for i in range (0,21):
+        try:
+            thr[i]=Thread(target=decode, args=(i,))
+            thr[i].start()
+        except:
+            print "Error", i
+
+    for i in range (0,21):
+        thr[i].join()
+
+    return heur
+
+def main (scramble, inst, heur) :
+    #List of corners
+    corn=[i for i in range (0,7)]
+
+    #List of moves
+    moves=["U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'"]
+
     #Function to perform a particular move on the cube
     def move(x, perm):
         if x/3==0 :
@@ -112,36 +128,13 @@ def steps (scramble, inst) :
         #print index
         return index
 
-    print 'Start'
-    print time.time()
-
-    with open('DBPat', 'rb') as pattern:
-        temp=pattern.readlines()
-        
-    for i in range (0,21):
-        try:
-            thr[i]=Thread(target=decode, args=(i,))
-            thr[i].start()
-        except:
-            print "Error", i
-
-    for i in range (0,21):
-        thr[i].join()
-
-    print time.time()               
-
-    #print heur[786][2][0][1][2][2]
-    
     base=[]
-    #print hst_ret(scramble)
     for y in range (0,9):
         perm=cp(scramble)
         move(y, perm)
         if hst_ret(perm)<=(hst_ret(scramble)-1):
             base.append([y, cp(perm)])
-        #print len(base)
 
-    #time.sleep(3600)
     soln=[[] for i in range (0, len(base))]
     for y in range (0,len(base)):           
         #thr[y]=Thread(target=init_ida, args=(y,))
