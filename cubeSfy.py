@@ -42,3 +42,24 @@ def d(vec, mat) :
         inst_prt.append(cubeRot.d(1, mat))
     return  inst_prt
 
+def f(vec, mat) :
+    inst_prt=[]
+    import cubeRot
+    vec = (vec)%4
+    if vec < 3 :
+        for i in range(0,vec) :
+            inst_prt.append(cubeRot.f(-1, mat))
+    else :
+        inst_prt.append(cubeRot.f(1, mat))
+    return  inst_prt
+
+def b(vec, mat) :
+    inst_prt=[]
+    import cubeRot
+    vec = (vec)%4
+    if vec < 3 :
+        for i in range(0,vec) :
+            inst_prt.append(cubeRot.b(-1, mat))
+    else :
+        inst_prt.append(cubeRot.b(1, mat))
+    return  inst_prt
