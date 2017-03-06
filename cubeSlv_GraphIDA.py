@@ -146,7 +146,16 @@ def main (scramble, heur) :
     for y in range (0,len(base)):
         if len(soln[y])<len(soln[pos]):
             pos=y
+        elif len(soln[y])==len(soln[pos]):
+            f_count=0
+            for i in  soln[y]:
+                if (i%3==4):
+                    f_count=f_count+1
+            for i in soln[pos]:
+                if (i%3==4):
+                    f_count=f_count-1
+            if f_count<=0:
+                pos=y
         
     return soln[pos]
-
 #steps()
