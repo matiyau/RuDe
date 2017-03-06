@@ -1,3 +1,0 @@
-the file decoding part can be started when the main scripts starts.
-Its execution may run parallel with other tasks
-so thread.join must occur after al  reading of cube and construction of matrix is done

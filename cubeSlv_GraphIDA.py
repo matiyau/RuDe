@@ -42,7 +42,7 @@ def setup():
 
     return heur
 
-def main (scramble, inst, heur) :
+def main (scramble, heur) :
     #List of corners
     corn=[i for i in range (0,7)]
 
@@ -90,14 +90,12 @@ def main (scramble, inst, heur) :
         if ida(perms, size)==0:
             #print "Solved"
             for i in range (0, len(perms)):
-                soln[y].append(moves[perms[i][0]])
+                soln[y].append(perms[i][0]+6)
         
 
     #Perform a depth-first algorithm on a list
     def ida(depth, rots):
         hst=len(depth)
-        #print hst
-        #print depth[len(depth)-1][0]
         start=3*(depth[hst-1][0]/3+1)
         for x in range (start, start+6):
             #print x
@@ -146,20 +144,9 @@ def main (scramble, inst, heur) :
 
     pos=0
     for y in range (0,len(base)):
-        print soln[y]
         if len(soln[y])<len(soln[pos]):
             pos=y
         
-    print "Best Solution :"
-    print soln[pos]
-        
-
-    '''with open('PatternDB', 'wb') as pattern:
-        pickle.dump(heur, pattern)'''
-    
-        
-    
-        
-    print "Cube Solved"
+    return soln[pos]
 
 #steps()

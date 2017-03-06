@@ -3,11 +3,12 @@ import pickle
 from time import sleep
 from cv2 import imread
 import cubeRot
+import serial
 from SimpleCV import Image, Camera
 
 
 def matrixForm(Arduino) :
-    camera=Camera(1)
+    camera=Camera(0)
     cube_sides = ['Front', 'Left', 'Back', 'Right', 'Up', 'Down']
     side='temp'
     opp=[-1 for x in range (0,6)]
@@ -15,28 +16,11 @@ def matrixForm(Arduino) :
     cor=[[[-1 for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
     sort=[[[[[0 for hs in range (0,3)] for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
 
-    '''
-    def col_feed(col_hsv_pdn) :
-        print col_hsv_pdn[0], "  ", col_hsv_pdn[1], "  ", col_hsv_pdn[2],
-        if (col_hsv_pdn[0]>75 and col_hsv_pdn[0]<=180) and (col_hsv_pdn[1]>=80) :
-            print ' Green'
+    def send_Ard(k):
+        Arduino.write("*<"+str(k)+"#")
+        if Arduino.read(1)=='N':
             return 1
-        elif (col_hsv_pdn[0]>186 and col_hsv_pdn[0]<260) and (col_hsv_pdn[1]>=45) :
-            print ' Blue'
-            return 2
-        elif (col_hsv_pdn[0]>337 or col_hsv_pdn[0]<7) and (col_hsv_pdn[1]>=30) :
-            print ' Red'
-            return 0
-        elif (col_hsv_pdn[0]>7 and col_hsv_pdn[0]<35) and (col_hsv_pdn[1]>=55 and col_hsv_pdn[1]<90) :
-            print ' Orange'
-            return 5
-        elif ((col_hsv_pdn[0]>18 and col_hsv_pdn[0]<55) and (col_hsv_pdn[1]>90)) or ((col_hsv_pdn[0]>=55 and col_hsv_pdn[0]<65) and (col_hsv_pdn[1]>80)) :
-            print ' Yellow'
-            return 3
-        else :
-            print ' White'
-            return 4
-    '''
+        return 0
     
     # Capture and process the images of each side side to extract the Hue-Saturation values
     def capt_proc (side) :
@@ -70,32 +54,9 @@ def matrixForm(Arduino) :
                 g_ave[2]= g_ave[2] + (float(image[x, y, 1])/1600)
                 r_ave[2]= r_ave[2] + (float(image[x, y, 2])/1600)
 
-        '''
-        image=cv2.resize(image, (80,80), interpolation=cv2.INTER_CUBIC)
-        for x in range(0,40) :
-            for y in range(0,40) :
-                image[x, y] =  [b_ave[0], g_ave[0], r_ave[0]]
-
-        for x in range(40,80) :
-            for y in range(0,40) :
-                image[x, y] =  [b_ave[1], g_ave[1], r_ave[1]]
-
-        for x in range(0,40) :
-            for y in range(40,80) :
-                image[x, y] =  [b_ave[2], g_ave[2], r_ave[2]]
-
-        for x in range(40,80) :
-            for y in range(40,80) :
-                image[x, y] =  [b_ave[3], g_ave[3], r_ave[3]]
-
-        cv2.imwrite(side + '_prcsd.jpg', image)
-        '''
-         
         for i in range(0,4):
-            #col_hsv_cv=cv2.cvtColor(np.uint8([[[b_ave[i], g_ave[i], r_ave[i]]]]), cv2.COLOR_BGR2HSV)
-            #sort[i/2][i%2][1][0] = np.array(col_hsv_cv[0][0][0:2]).tolist()
             sort[i/2][i%2][1][0] = [b_ave[i], g_ave[i], r_ave[i]]
-
+            
 
     # Universal positioning for HUE-SATURATION value matrix
     def s(i):
@@ -115,16 +76,8 @@ def matrixForm(Arduino) :
     # r1, r2 are distances from origin : These are the SATURATION values
     # a1, a2 are angles made with positive X-axis : These are the HUE angles
     def dist(p1,p2):
-        '''r1=float(p1[1])
-        r2=float(p2[1])
-        a1=float(p1[0])
-        a2=float(p2[0])
-        d=((r1*r1)+(r2*r2)-(2*r1*r2*cos(radians(a1-a2))))'''
         d=sqrt(float(p1[0]-p2[0])**2 + float(p1[1]-p2[1])**2 + float(p1[2]-p2[2])**2) 
-        #print d
-        return d
-        #return ((r1*r1)+(r2*r2)-(2*r1*r2*cos(radians(a1-a2))))
-    
+        return d    
     
     # Group the colour at position 'i' with its 3 nearest neighbours
     # Assign the colour code 'j' to all colours in this group
@@ -182,17 +135,26 @@ def matrixForm(Arduino) :
         if side != 'Up' and side != 'Down':
             cubeRot.full('up', 1, mat)
             cubeRot.full('up', 1, sort)
+            if send_Ard(3)==0:
+                return
         elif side == 'Up' :
             cubeRot.full('left', 1, mat)
             cubeRot.full('left', 1, mat)
             cubeRot.full('left', 1, sort)
             cubeRot.full('left', 1, sort)
+            if send_Ard(1)==0:
+                return
         else:
             cubeRot.full('left', -1, mat)
             cubeRot.full('left', -1, sort)
+            if send_Ard(0)==0:
+                return
+            
         if side == 'Right':
             cubeRot.full('left', -1, mat)
             cubeRot.full('left', -1, sort)
+            if send_Ard(2)==0:
+                return
         #print mat[0][0][0][2], '  ', mat[0][0][1][2]
         #print mat[1][0][0][2], '  ', mat[1][0][1][2], '\n'
         print "Next\n"
@@ -209,7 +171,7 @@ def matrixForm(Arduino) :
             break
 
 
-    # Assign the last colour to the remaining 4 colours
+    # Assign the last colour to the remaining 4 positions
     for i in range (0,24):
         if m(i)==(-1):
             asgn(i, 5)
@@ -220,8 +182,6 @@ def matrixForm(Arduino) :
             print "\n"
 
     pair()
-    #print opp
-    #print mat
         
     for i in range (0,24):
         if m(i)==opp[0] :
@@ -232,23 +192,11 @@ def matrixForm(Arduino) :
             asgn(i, 3)
 
     pair()
-
-    '''
-    for x in range(0,2):
-        for y in range (0,2) :
-            for z in range (0,2):
-                add = mat[x][y][z][0] + mat[x][y][z][1] + mat[x][y][z][2] - 3
-                cor[x][y][z]=(add/5)+(((add%5)**3 + 17*(add%5))/6 - (add%5)**2)
-    '''               
-    #print cor
+               
     print mat
 
     with open('Matrix', 'wb') as comb:
         pickle.dump(mat, comb)
-'''
-    with open('Corner', 'wb') as corner:
-        pickle.dump(cor, corner)
-'''
 
 
 #matrixForm(3)
