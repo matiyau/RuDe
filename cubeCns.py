@@ -8,7 +8,7 @@ from SimpleCV import Image, Camera
 
 
 def matrixForm(Arduino) :
-    camera=Camera(0)
+    camera=Camera(1)
     cube_sides = ['Front', 'Left', 'Back', 'Right', 'Up', 'Down']
     side='temp'
     opp=[-1 for x in range (0,6)]
@@ -17,6 +17,7 @@ def matrixForm(Arduino) :
     sort=[[[[[0 for hs in range (0,3)] for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
 
     def send_Ard(k):
+        return 1
         Arduino.write("*<"+str(k)+"#")
         if Arduino.read(1)=='N':
             return 1
@@ -24,7 +25,7 @@ def matrixForm(Arduino) :
     
     # Capture and process the images of each side side to extract the Hue-Saturation values
     def capt_proc (side) :
-        camera.getImage().save(side + '_raw.jpg')
+        camera.getImage().save(side + '1_raw.jpg')
         image=imread(side + '_raw.jpg')
         b_ave=[float(0), float(0), float(0), float(0)]
         g_ave=[float(0), float(0), float(0), float(0)]
@@ -126,27 +127,30 @@ def matrixForm(Arduino) :
     # Rotate the cube to bring each side in front of the Camera.
     for side in cube_sides :
         print side
-        #for cntdwn in range(5,0,-1) :
-            #print cntdwn
-            #sleep(1)
         capt_proc(side)
         #print mat[0][1][1][0], '  ', mat[1][1][1][0]
         #print mat[0][0][1][0], '  ', mat[1][0][1][0], '\n'
         if side != 'Up' and side != 'Down':
             cubeRot.full('up', 1, mat)
             cubeRot.full('up', 1, sort)
-            if send_Ard(3)==0:
+            if send_Ard(5)==0:
                 return
         elif side == 'Up' :
-            cubeRot.full('left', 1, mat)
-            cubeRot.full('left', 1, mat)
-            cubeRot.full('left', 1, sort)
-            cubeRot.full('left', 1, sort)
-            if send_Ard(1)==0:
+            cubeRot.full('up', -1, mat)
+            cubeRot.full('up', -1, mat)
+            cubeRot.full('up', -1, sort)
+            cubeRot.full('up', -1, sort)
+            if send_Ard(4)==0:
                 return
         else:
-            cubeRot.full('left', -1, mat)
-            cubeRot.full('left', -1, sort)
+            cubeRot.full('up', -1, mat)
+            cubeRot.full('up', -1, mat)
+            cubeRot.full('up', -1, sort)
+            cubeRot.full('up', -1, sort)
+            if send_Ard(4)==0:
+                return
+            cubeRot.full('left', 1, mat)
+            cubeRot.full('left', 1, sort)
             if send_Ard(0)==0:
                 return
             

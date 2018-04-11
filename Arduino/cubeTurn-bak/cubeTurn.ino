@@ -6,33 +6,32 @@
 #define SEQ_STP '#'
 #define SEQ_SEP '<'
 
-#define L_HOLD 7
-#define U_HOLD 8
-//#define R_HOLD 9 : Disabled For Servo Maitenance
-#define R_HOLD 10 //Dummy Pin
-#define D_HOLD 6
+#define L_HOLD 11
+#define U_HOLD 12
+#define R_HOLD 13
+#define D_HOLD 7
 
-#define L_ROT 3
-#define U_ROT 4
-#define R_ROT 5
+#define L_ROT 8
+#define U_ROT 9
+#define R_ROT 10
 
 #define L_GRIP_ANG 150
 #define U_GRIP_ANG 150
 #define R_GRIP_ANG 150
 #define D_GRIP_ANG 150
 
-#define L_UGRIP_ANG 70
-#define U_UGRIP_ANG 70
-#define R_UGRIP_ANG 70
-#define D_UGRIP_ANG 70
+#define L_UGRIP_ANG 60
+#define U_UGRIP_ANG 60
+#define R_UGRIP_ANG 60
+#define D_UGRIP_ANG 60
 
 #define L_ROT_0 810
 #define U_ROT_0 725
 #define R_ROT_0 690
 
-#define L_ROT_90 1550
-#define U_ROT_90 1650
-#define R_ROT_90 1400
+#define L_ROT_90
+#define U_ROT_90
+#define R_ROT_90
 
 #define L_ROT_180 2370
 #define U_ROT_180 2445
@@ -44,10 +43,10 @@ Servo servo[7];
 char dcsn_char;
 byte stepState=0;
 byte stepDelay=10;
-byte stepPins[4]={A0,A3,A1,A2};
+byte stepPins[4]={2,4,3,5};
 
-int ROT_PTS[3][3]={{L_ROT_0, L_ROT_90, L_ROT_180}, {U_ROT_0, U_ROT_90, U_ROT_180}, {R_ROT_0, R_ROT_90, R_ROT_180}};
-byte ROT_NOW[3]={1, 1, 1};
+byte ROT_PTS[3][3]={{L_ROT_0, L_ROT_90, L_ROT_180}, {U_ROT_0, U_ROT_90, U_ROT_180}, {R_ROT_0, R_ROT_90, R_ROT_180}};
+byte ROT_NOW[3]=={1, 1, 1};
 
 void servoWrite(byte servoNum, byte servoPos)
 {
@@ -55,13 +54,13 @@ void servoWrite(byte servoNum, byte servoPos)
   ROT_NOW[servoNum]=servoPos;
 }
 
-uint8_t cubeRot(uint8_t moveCode)
+byte cubeRot(byte moveCode)
 {
   if (moveCode == 15)
   {
-    servoWrite(0,1);
-    servoWrite(1,1);
-    servoWrite(2,1);
+    servo[0].write(90);
+    servo[1].write(90);
+    servo[2].write(90);
     servo[3].write(L_UGRIP_ANG);
     servo[4].write(U_UGRIP_ANG);
     servo[5].write(R_UGRIP_ANG);
@@ -88,27 +87,25 @@ uint8_t cubeRot(uint8_t moveCode)
   return 1;
 } 
 
-uint8_t fullXTurn(uint8_t stepCode)
+void fullXTurn(byte stepCode)
 {
-  servoWrite(0,1);
-  servoWrite(2,1);
   grip(2);
   if (stepCode==0)
   {
-    servoWrite(0,0);
-    servoWrite(2,0);
+    servo[0].write(0);
+    servo[2].write(0);
   }
   else if (stepCode==2)
   {
-    servoWrite(0,2);
-    servoWrite(2,2);
+    servo[0].write(180);
+    servo[2].write(180);
   }
   ugrip(2);
 }
 
-uint8_t fullYTurn(uint8_t stepCode)
+void fullYTurn(byte stepCode)
 {
-  uint8_t stepDir;
+  byte stepDir;
   if (stepCode==1)
   {
     stepDir = 1;
@@ -116,55 +113,41 @@ uint8_t fullYTurn(uint8_t stepCode)
   }
   else
   {
-    stepDir = 1-stepCode;
+    stepDir = -(stepCode-1);
     stepCode = 50;
   }
-  digitalWrite(stepPins[stepState], HIGH);
-  digitalWrite(stepPins[(stepState+2)%4], LOW);
-  digitalWrite(stepPins[(stepState+1)%4], HIGH);
-  digitalWrite(stepPins[(stepState+3)%4], LOW);
-  delay(stepDelay);
-  for (uint8_t stepCount = 0; stepCount<stepCode; stepCount++)
+  for (int stepCount = 0; stepCount<stepCode; stepCount++)
   {
+    digitalWrite(stepPins[stepState], LOW);
     stepState = (stepState + stepDir + 4) % 4;
     digitalWrite(stepPins[stepState], HIGH);
-    digitalWrite(stepPins[(stepState+2)%4], LOW);
-    digitalWrite(stepPins[(stepState+1)%4], HIGH);
-    digitalWrite(stepPins[(stepState+3)%4], LOW);
     delay(stepDelay);
   }
-  digitalWrite(stepPins[0], LOW);
-  digitalWrite(stepPins[1], LOW);
-  digitalWrite(stepPins[2], LOW);
-  digitalWrite(stepPins[3], LOW);
-  return 0;
 }
 
-uint8_t faceTurn(uint8_t faceCode, uint8_t rotCode)
+void faceTurn(byte faceCode, byte rotCode)
 {
-  uint8_t finPos = (ROT_NOW[faceCode]+rotCode)%4;
-  if (finPos==3)
+  byte finPos = (servo[faceCode].read()+90*rotCode)%360;
+  if (finPos==270)
   {
     if (rotCode==3)
     {
-      servoWrite(faceCode,ROT_NOW[faceCode]+1);
-      delay(500);
+      servo[faceCode].write(servo[faceCode].read()+90);
       finPos = 0;
     }
     else
     {
-      servoWrite(faceCode,ROT_NOW[faceCode]-1);
-      delay(500);
-      finPos = 2;
+      servo[faceCode].write(servo[faceCode].read()-90);
+      finPos = 180;
     }
   }
   grip(faceCode);
-  servoWrite(faceCode,finPos);  
+  servo[faceCode].write(finPos);
   delay(500);
   ugrip(faceCode);
 }
 
-uint8_t grip(uint8_t face)
+void grip(byte face)
 {
   if (face==0 || face==2)
   {
@@ -178,15 +161,10 @@ uint8_t grip(uint8_t face)
   {
     servo[4].write(U_GRIP_ANG);
     delay(500);
-    digitalWrite(stepPins[stepState], HIGH);
-    digitalWrite(stepPins[(stepState+2)%4], LOW);
-    digitalWrite(stepPins[(stepState+1)%4], HIGH);
-    digitalWrite(stepPins[(stepState+3)%4], LOW);
-    delay(stepDelay);
   }
 }
 
-uint8_t ugrip(uint8_t face)
+void ugrip(byte face)
 {
   if (face==0 || face==2)
   {
@@ -200,10 +178,6 @@ uint8_t ugrip(uint8_t face)
   {
     servo[4].write(U_UGRIP_ANG);
     delay(500);
-    digitalWrite(stepPins[0], LOW);
-    digitalWrite(stepPins[1], LOW);
-    digitalWrite(stepPins[2], LOW);
-    digitalWrite(stepPins[3], LOW);
   }
 }
 
@@ -211,24 +185,20 @@ uint8_t ugrip(uint8_t face)
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  pinMode(stepPins[0],OUTPUT);
-  pinMode(stepPins[1],OUTPUT);
-  pinMode(stepPins[2],OUTPUT);
-  pinMode(stepPins[3],OUTPUT);
-  digitalWrite(stepPins[0], LOW);
-  digitalWrite(stepPins[1], LOW);
-  digitalWrite(stepPins[2], LOW);
-  digitalWrite(stepPins[3], LOW);
-  servo[0].attach(L_ROT, ROT_PTS[0][0], ROT_PTS[0][2]);
-  servo[1].attach(U_ROT, ROT_PTS[1][0], ROT_PTS[1][2]);
-  servo[2].attach(R_ROT, ROT_PTS[2][0], ROT_PTS[2][2]);
+  pinMode(2,OUTPUT);
+  pinMode(3,OUTPUT);
+  pinMode(5,OUTPUT);
+  pinMode(5,OUTPUT);
+  servo[0].attach(L_ROT, L_ROT_PTS[0], L_ROT_PTS[2]);
+  servo[1].attach(U_ROT, U_ROT_PTS[0], U_ROT_PTS[2]);
+  servo[2].attach(R_ROT, R_ROT_PTS[0], R_ROT_PTS[2]);
   servo[3].attach(L_HOLD, 600, 2150);
   servo[4].attach(U_HOLD, 650, 2200);
   servo[5].attach(R_HOLD, 535, 2185);
   servo[6].attach(D_HOLD, 630, 2340);
-  servoWrite(0,1);
-  servoWrite(1,1);
-  servoWrite(2,1);
+  servo[0].write(90);
+  servo[1].write(90);
+  servo[2].write(90);
   servo[3].write(L_UGRIP_ANG);
   servo[4].write(U_UGRIP_ANG);
   servo[5].write(R_UGRIP_ANG);
@@ -245,10 +215,10 @@ void loop() {
   {
     return;
   }
-  dcsn_char = '/0';
+  dcsn_char=Serial.read();
   while (dcsn_char!=SEQ_STP)
   {
-    uint8_t mov = Serial.parseInt();
+    byte mov = Serial.parseInt();
     //Serial.println(mov);
     if (!cubeRot(mov))
     {
