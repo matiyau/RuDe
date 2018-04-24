@@ -8,8 +8,8 @@ def steps() :
     import serial    
     import pickle 
     
-    Arduino = serial.Serial("/dev/ttyUSB0", 115200)
-    '''try:
+    #Arduino = serial.Serial("/dev/ttyUSB0", 115200)
+    try:
         Arduino = serial.Serial("/dev/ttyACM0", 115200)
     except:
         try:
@@ -23,7 +23,7 @@ def steps() :
                 except:
                     print "Error Connecting Arduino"
                     Arduino=7
-                    #return 0'''
+                    #return 0
                 
     sleep(4)
 

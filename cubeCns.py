@@ -4,11 +4,10 @@ from time import sleep
 from cv2 import imread
 import cubeRot
 import serial
-from SimpleCV import Image, Camera
+#from SimpleCV import Image, Camera
 
 
 def matrixForm(Arduino) :
-    camera=Camera(1)
     cube_sides = ['Front', 'Left', 'Back', 'Right', 'Up', 'Down']
     side='temp'
     opp=[-1 for x in range (0,6)]
@@ -25,8 +24,10 @@ def matrixForm(Arduino) :
     
     # Capture and process the images of each side side to extract the Hue-Saturation values
     def capt_proc (side) :
-        camera.getImage().save(side + '1_raw.jpg')
-        image=imread(side + '_raw.jpg')
+        camera = cv2.VideoCapture(1)
+        retval,image = camera.read()
+        del(camera)
+        cv2.imwrite(side + '_raw.jpg',image)
         b_ave=[float(0), float(0), float(0), float(0)]
         g_ave=[float(0), float(0), float(0), float(0)]
         r_ave=[float(0), float(0), float(0), float(0)]

@@ -77,9 +77,9 @@ uint8_t cubeRot(uint8_t moveCode)
   }
   else if (moveCode/3 == 4)
   {
-    fullYTurn(2);
+    fullXTurn(0);
     faceTurn(2, (moveCode%3)+1);
-    fullYTurn(0);
+    fullXTurn(2);
   }
   else
   {
@@ -95,13 +95,13 @@ uint8_t fullXTurn(uint8_t stepCode)
   grip(2);
   if (stepCode==0)
   {
-    servoWrite(0,0);
-    servoWrite(2,0);
+    servoWrite(0,2);
+    servoWrite(2,2);
   }
   else if (stepCode==2)
   {
-    servoWrite(0,2);
-    servoWrite(2,2);
+    servoWrite(0,0);
+    servoWrite(2,0);
   }
   ugrip(2);
 }
