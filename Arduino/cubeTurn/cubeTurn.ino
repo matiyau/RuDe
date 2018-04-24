@@ -8,8 +8,8 @@
 
 #define L_HOLD 7
 #define U_HOLD 8
-//#define R_HOLD 9 : Disabled For Servo Maitenance
-#define R_HOLD 10 //Dummy Pin
+#define R_HOLD 9 //: Disabled For Servo Maitenance
+//#define R_HOLD 10 //Dummy Pin
 #define D_HOLD 6
 
 #define L_ROT 3
@@ -27,15 +27,15 @@
 #define D_UGRIP_ANG 70
 
 #define L_ROT_0 810
-#define U_ROT_0 725
+#define U_ROT_0 600
 #define R_ROT_0 690
 
 #define L_ROT_90 1550
-#define U_ROT_90 1650
+#define U_ROT_90 1350
 #define R_ROT_90 1400
 
 #define L_ROT_180 2370
-#define U_ROT_180 2445
+#define U_ROT_180 2050
 #define R_ROT_180 2205
 
 
@@ -176,6 +176,8 @@ uint8_t grip(uint8_t face)
   }
   else
   {
+    servoWrite(0,1);
+    servoWrite(2,1);
     servo[4].write(U_GRIP_ANG);
     delay(500);
     digitalWrite(stepPins[stepState], HIGH);
