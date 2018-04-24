@@ -27,6 +27,7 @@ def matrixForm(Arduino) :
         camera = cv2.VideoCapture(1)
         retval,image = camera.read()
         del(camera)
+        image = cv2.rotate(image,cv2.ROTATE_90_COUNTERCLOCKWISE)
         cv2.imwrite(side + '_raw.jpg',image)
         b_ave=[float(0), float(0), float(0), float(0)]
         g_ave=[float(0), float(0), float(0), float(0)]
