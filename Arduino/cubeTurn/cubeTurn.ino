@@ -1,4 +1,4 @@
-//moves=["x", "x2", "x'", "y", "y2", "y'", "U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "RESET"]
+//moves=["x", "x2", "x'", "y", "y2", "y'", "U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "RESET","DETACH", "ATTACH"]
 
 #include<Servo.h>
 
@@ -27,15 +27,15 @@
 #define D_UGRIP_ANG 70
 
 #define L_ROT_0 810
-#define U_ROT_0 600
+#define U_ROT_0 640
 #define R_ROT_0 690
 
 #define L_ROT_90 1550
-#define U_ROT_90 1350
+#define U_ROT_90 1395
 #define R_ROT_90 1400
 
 #define L_ROT_180 2370
-#define U_ROT_180 2050
+#define U_ROT_180 2140
 #define R_ROT_180 2205
 
 
@@ -43,7 +43,7 @@ Servo servo[7];
 
 char dcsn_char;
 byte stepState=0;
-byte stepDelay=10;
+byte stepDelay=20;
 byte stepPins[4]={A0,A3,A1,A2};
 
 int ROT_PTS[3][3]={{L_ROT_0, L_ROT_90, L_ROT_180}, {U_ROT_0, U_ROT_90, U_ROT_180}, {R_ROT_0, R_ROT_90, R_ROT_180}};
@@ -67,6 +67,26 @@ uint8_t cubeRot(uint8_t moveCode)
     servo[5].write(R_UGRIP_ANG);
     servo[6].write(D_GRIP_ANG);    
   }
+  else if (moveCode == 16)
+  {
+    servo[0].detach();
+    servo[1].detach();
+    servo[2].detach();
+    servo[3].detach();
+    servo[4].detach();
+    servo[5].detach();
+    servo[6].detach();
+  }
+  else if (moveCode == 17)
+  {
+    servo[0].attach(L_ROT, ROT_PTS[0][0], ROT_PTS[0][2]);
+    servo[1].attach(U_ROT, ROT_PTS[1][0], ROT_PTS[1][2]);
+    servo[2].attach(R_ROT, ROT_PTS[2][0], ROT_PTS[2][2]);
+    servo[3].attach(L_HOLD, 600, 2150);
+    servo[4].attach(U_HOLD, 650, 2200);
+    servo[5].attach(R_HOLD, 535, 2185);
+    servo[6].attach(D_HOLD, 630, 2340);
+  }
   else if (moveCode/3 == 0)
   {
     fullXTurn(moveCode%3);
@@ -78,7 +98,7 @@ uint8_t cubeRot(uint8_t moveCode)
   else if (moveCode/3 == 4)
   {
     fullXTurn(0);
-    faceTurn(2, (moveCode%3)+1);
+    faceTurn(1, (moveCode%3)+1);
     fullXTurn(2);
   }
   else
@@ -104,6 +124,9 @@ uint8_t fullXTurn(uint8_t stepCode)
     servoWrite(2,0);
   }
   ugrip(2);
+  delay(500);
+  servoWrite(0,1);
+  servoWrite(2,1);
 }
 
 uint8_t fullYTurn(uint8_t stepCode)
@@ -193,7 +216,7 @@ uint8_t ugrip(uint8_t face)
   if (face==0 || face==2)
   {
     servo[6].write(D_GRIP_ANG);
-    delay(500);
+    delay(1000);
     servo[3].write(L_UGRIP_ANG);
     servo[5].write(R_UGRIP_ANG);
     delay(500);

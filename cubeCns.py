@@ -1,7 +1,7 @@
 from  math import sqrt
 import pickle
 from time import sleep
-from cv2 import imread
+import cv2
 import cubeRot
 import serial
 #from SimpleCV import Image, Camera
@@ -14,9 +14,9 @@ def matrixForm(Arduino) :
     mat=[[[[-1 for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
     cor=[[[-1 for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
     sort=[[[[[0 for hs in range (0,3)] for plane in range(0,3)] for z in range (0,2)] for y in range (0,2)] for x in range (0,2)]
-
+    
     def send_Ard(k):
-        return 1
+        Arduino.reset_input_buffer()
         Arduino.write("*<"+str(k)+"#")
         if Arduino.read(1)=='N':
             return 1
@@ -25,10 +25,18 @@ def matrixForm(Arduino) :
     # Capture and process the images of each side side to extract the Hue-Saturation values
     def capt_proc (side) :
         camera = cv2.VideoCapture(1)
-        retval,image = camera.read()
+        sleep(0.5)
+        camera.set(3,480)	#Height
+        camera.set(4,640)	#Width
+
+        #Discard The First Few Frames
+        for i in range(0,5) :
+            retval,image = camera.read()
         del(camera)
         image = cv2.rotate(image,cv2.ROTATE_90_COUNTERCLOCKWISE)
-        cv2.imwrite(side + '_raw.jpg',image)
+        cv2.imwrite(side + '_1raw.jpg',image)
+
+        image = cv2.imread(side + '_raw.jpg')
         b_ave=[float(0), float(0), float(0), float(0)]
         g_ave=[float(0), float(0), float(0), float(0)]
         r_ave=[float(0), float(0), float(0), float(0)]
@@ -125,7 +133,9 @@ def matrixForm(Arduino) :
                 opp[col2]=col1
                 break
 
-   
+    
+
+    
     # Rotate the cube to bring each side in front of the Camera.
     for side in cube_sides :
         print side

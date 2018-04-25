@@ -46,7 +46,7 @@ def steps() :
     
     print "\nSOLVING CUBE ..."
     
-    solution="*"+"".join('<'+str(k) for k in Algo)+"#"
+    solution="*"+"".join('<'+str(k) for k in Algo)+"<15#"
     print solution
     Arduino.write(solution)
     if Arduino.read(1)!='N':
@@ -56,5 +56,3 @@ def steps() :
     print '\n*** Cube Solved ***'
 
 steps()
-    
-    
