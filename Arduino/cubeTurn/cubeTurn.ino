@@ -1,4 +1,4 @@
-//moves=["x", "x2", "x'", "y", "y2", "y'", "U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "RESET","DETACH", "ATTACH"]
+//moves=["x", "x2", "x'", "y", "y2", "y'", "U", "U2", "U'", "R", "R2", "R'", "F", "F2", "F'", "RESET","DETACH", "ATTACH", "POSITION"]
 
 #include<Servo.h>
 
@@ -8,18 +8,17 @@
 
 #define L_HOLD 7
 #define U_HOLD 8
-#define R_HOLD 9 //: Disabled For Servo Maitenance
-//#define R_HOLD 10 //Dummy Pin
+#define R_HOLD 9 
 #define D_HOLD 6
 
 #define L_ROT 3
 #define U_ROT 4
 #define R_ROT 5
 
-#define L_GRIP_ANG 150
+#define L_GRIP_ANG 155
 #define U_GRIP_ANG 150
-#define R_GRIP_ANG 150
-#define D_GRIP_ANG 150
+#define R_GRIP_ANG 155
+#define D_GRIP_ANG 145
 
 #define L_UGRIP_ANG 70
 #define U_UGRIP_ANG 70
@@ -43,7 +42,7 @@ Servo servo[7];
 
 char dcsn_char;
 byte stepState=0;
-byte stepDelay=20;
+byte stepDelay=10;
 byte stepPins[4]={A0,A3,A1,A2};
 
 int ROT_PTS[3][3]={{L_ROT_0, L_ROT_90, L_ROT_180}, {U_ROT_0, U_ROT_90, U_ROT_180}, {R_ROT_0, R_ROT_90, R_ROT_180}};
@@ -87,6 +86,18 @@ uint8_t cubeRot(uint8_t moveCode)
     servo[5].attach(R_HOLD, 535, 2185);
     servo[6].attach(D_HOLD, 630, 2340);
   }
+  else if (moveCode == 18)
+  {
+    servoWrite(0,1);
+    servoWrite(2,1);
+    delay(500);
+    servo[3].write(L_GRIP_ANG);
+    servo[5].write(R_GRIP_ANG);
+    delay(500);
+    servo[3].write(L_UGRIP_ANG);
+    servo[5].write(R_UGRIP_ANG);
+    delay(500);    
+  }
   else if (moveCode/3 == 0)
   {
     fullXTurn(moveCode%3);
@@ -112,6 +123,7 @@ uint8_t fullXTurn(uint8_t stepCode)
 {
   servoWrite(0,1);
   servoWrite(2,1);
+  delay(500);
   grip(2);
   if (stepCode==0)
   {
@@ -123,10 +135,11 @@ uint8_t fullXTurn(uint8_t stepCode)
     servoWrite(0,0);
     servoWrite(2,0);
   }
-  ugrip(2);
   delay(500);
+  ugrip(2);
   servoWrite(0,1);
   servoWrite(2,1);
+  delay(500);
 }
 
 uint8_t fullYTurn(uint8_t stepCode)
@@ -216,7 +229,7 @@ uint8_t ugrip(uint8_t face)
   if (face==0 || face==2)
   {
     servo[6].write(D_GRIP_ANG);
-    delay(1000);
+    delay(500);
     servo[3].write(L_UGRIP_ANG);
     servo[5].write(R_UGRIP_ANG);
     delay(500);
@@ -244,20 +257,9 @@ void setup() {
   digitalWrite(stepPins[1], LOW);
   digitalWrite(stepPins[2], LOW);
   digitalWrite(stepPins[3], LOW);
-  servo[0].attach(L_ROT, ROT_PTS[0][0], ROT_PTS[0][2]);
-  servo[1].attach(U_ROT, ROT_PTS[1][0], ROT_PTS[1][2]);
-  servo[2].attach(R_ROT, ROT_PTS[2][0], ROT_PTS[2][2]);
-  servo[3].attach(L_HOLD, 600, 2150);
-  servo[4].attach(U_HOLD, 650, 2200);
-  servo[5].attach(R_HOLD, 535, 2185);
-  servo[6].attach(D_HOLD, 630, 2340);
-  servoWrite(0,1);
-  servoWrite(1,1);
-  servoWrite(2,1);
-  servo[3].write(L_UGRIP_ANG);
-  servo[4].write(U_UGRIP_ANG);
-  servo[5].write(R_UGRIP_ANG);
-  servo[6].write(D_GRIP_ANG);
+  cubeRot(17);
+  cubeRot(15);
+  cubeRot(16);
 }
 
 void loop() {

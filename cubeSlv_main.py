@@ -5,7 +5,7 @@ def steps() :
     import cubeSlv_GraphIDA as IDA    
     
     from time import sleep
-    import serial    
+    import serial
     import pickle 
     
     #Arduino = serial.Serial("/dev/ttyUSB0", 115200)
@@ -28,11 +28,14 @@ def steps() :
     sleep(4)
 
     print "\nRESETTING GRIPPERS."
-    Arduino.write("*15#")
+    #Attach Servos and then Reset Grippers
+    Arduino.write("*<17<15#")
     
     
-    print "\nCONSTRUCTING CUBE ...\nPlease Display The Mentioned Sides To The Camera."
+    print "\nCONSTRUCTING CUBE ...\nCapturing Faces"
     Cube = cubeCns.matrixForm(Arduino)
+
+    
     with open('Matrix', 'rb') as comb:
         Cube=pickle.load(comb)
 
@@ -48,10 +51,15 @@ def steps() :
     
     solution="*"+"".join('<'+str(k) for k in Algo)+"<15#"
     print solution
+    
+      
     Arduino.write(solution)
     if Arduino.read(1)!='N':
         print "Cube not solved"
         return 0
+
+    #Detach All Servos
+    Arduino.write("*16#")
     
     print '\n*** Cube Solved ***'
 

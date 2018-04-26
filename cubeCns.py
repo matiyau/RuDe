@@ -30,40 +30,41 @@ def matrixForm(Arduino) :
         camera.set(4,640)	#Width
 
         #Discard The First Few Frames
-        for i in range(0,5) :
+        for i in range(0,10) :
             retval,image = camera.read()
         del(camera)
         image = cv2.rotate(image,cv2.ROTATE_90_COUNTERCLOCKWISE)
-        cv2.imwrite(side + '_1raw.jpg',image)
+        image = image[100:500,40:440]
+        cv2.imwrite(side + '_raw.jpg',image)
 
-        image = cv2.imread(side + '_raw.jpg')
+        #image = cv2.imread(side + '_raw.jpg')
         b_ave=[float(0), float(0), float(0), float(0)]
         g_ave=[float(0), float(0), float(0), float(0)]
         r_ave=[float(0), float(0), float(0), float(0)]
 
-        for x in range(80,120) :
-            for y in range(80,120) :
-                b_ave[1]= b_ave[1] + (float(image[x, y, 0])/1600)
-                g_ave[1]= g_ave[1] + (float(image[x, y, 1])/1600)
-                r_ave[1]= r_ave[1] + (float(image[x, y, 2])/1600)
+        for x in range(0,100) :
+            for y in range(0,100) :
+                b_ave[1]= b_ave[1] + (float(image[x, y, 0])/10000)
+                g_ave[1]= g_ave[1] + (float(image[x, y, 1])/10000)
+                r_ave[1]= r_ave[1] + (float(image[x, y, 2])/10000)
 
-        for x in range(200,240) :
-            for y in range(80,120) :
-                b_ave[0]= b_ave[0] + (float(image[x, y, 0])/1600)
-                g_ave[0]= g_ave[0] + (float(image[x, y, 1])/1600)
-                r_ave[0]= r_ave[0] + (float(image[x, y, 2])/1600)
+        for x in range(300,400) :
+            for y in range(0,100) :
+                b_ave[0]= b_ave[0] + (float(image[x, y, 0])/10000)
+                g_ave[0]= g_ave[0] + (float(image[x, y, 1])/10000)
+                r_ave[0]= r_ave[0] + (float(image[x, y, 2])/10000)
 
-        for x in range(80,120) :
-            for y in range(200,240) :
-                b_ave[3]= b_ave[3] + (float(image[x, y, 0])/1600)
-                g_ave[3]= g_ave[3] + (float(image[x, y, 1])/1600)
-                r_ave[3]= r_ave[3] + (float(image[x, y, 2])/1600)
+        for x in range(0,100) :
+            for y in range(300,400) :
+                b_ave[3]= b_ave[3] + (float(image[x, y, 0])/10000)
+                g_ave[3]= g_ave[3] + (float(image[x, y, 1])/10000)
+                r_ave[3]= r_ave[3] + (float(image[x, y, 2])/10000)
                 
-        for x in range(200,240) :
-            for y in range(200,240) :
-                b_ave[2]= b_ave[2] + (float(image[x, y, 0])/1600)
-                g_ave[2]= g_ave[2] + (float(image[x, y, 1])/1600)
-                r_ave[2]= r_ave[2] + (float(image[x, y, 2])/1600)
+        for x in range(300,400) :
+            for y in range(300,400) :
+                b_ave[2]= b_ave[2] + (float(image[x, y, 0])/10000)
+                g_ave[2]= g_ave[2] + (float(image[x, y, 1])/10000)
+                r_ave[2]= r_ave[2] + (float(image[x, y, 2])/10000)
 
         for i in range(0,4):
             sort[i/2][i%2][1][0] = [b_ave[i], g_ave[i], r_ave[i]]
@@ -139,9 +140,14 @@ def matrixForm(Arduino) :
     # Rotate the cube to bring each side in front of the Camera.
     for side in cube_sides :
         print side
+
+        #Correctly Position The Cube
+        #For Up, Cube is already positioned with side grippers
+        if side != 'Up' :
+            if send_Ard(18)==0:
+                return
+        
         capt_proc(side)
-        #print mat[0][1][1][0], '  ', mat[1][1][1][0]
-        #print mat[0][0][1][0], '  ', mat[1][0][1][0], '\n'
         if side != 'Up' and side != 'Down':
             cubeRot.full('up', 1, mat)
             cubeRot.full('up', 1, sort)
@@ -171,12 +177,13 @@ def matrixForm(Arduino) :
             cubeRot.full('left', -1, sort)
             if send_Ard(2)==0:
                 return
-        #print mat[0][0][0][2], '  ', mat[0][0][1][2]
-        #print mat[1][0][0][2], '  ', mat[1][0][1][2], '\n'
-        print "Next\n"
+        #print "Next\n"
 
 
-    print sort
+    if send_Ard(18)==0:
+        return
+    #print sort
+
 
     # Group 5 colours of the cube
     for i in range (0,5) :
@@ -193,9 +200,10 @@ def matrixForm(Arduino) :
             asgn(i, 5)
 
     for i in range (0,24):
-        print m(i)
+        #print m(i)
         if i%3==2:
-            print "\n"
+            #print "\n"
+            next
 
     pair()
         
@@ -209,7 +217,7 @@ def matrixForm(Arduino) :
 
     pair()
                
-    print mat
+    #print mat
 
     with open('Matrix', 'wb') as comb:
         pickle.dump(mat, comb)
