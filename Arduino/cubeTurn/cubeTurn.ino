@@ -26,15 +26,15 @@
 #define D_UGRIP_ANG 70
 
 #define L_ROT_0 810
-#define U_ROT_0 640
+#define U_ROT_0 800
 #define R_ROT_0 690
 
 #define L_ROT_90 1550
-#define U_ROT_90 1395
+#define U_ROT_90 1800
 #define R_ROT_90 1400
 
 #define L_ROT_180 2370
-#define U_ROT_180 2140
+#define U_ROT_180 2750
 #define R_ROT_180 2205
 
 
