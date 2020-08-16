@@ -146,7 +146,8 @@ def matrixForm(Arduino) :
         if side != 'Up' :
             if send_Ard(18)==0:
                 return
-        
+
+        sleep(0.5)
         capt_proc(side)
         if side != 'Up' and side != 'Down':
             cubeRot.full('up', 1, mat)
